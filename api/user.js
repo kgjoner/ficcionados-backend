@@ -75,7 +75,7 @@ module.exports = app => {
         .where( {id : req.params.id}).first()
         .whereNull('deletedAt')
         .then(user => {
-            user.bio = user.bio.toString()
+            if(user.bio) user.bio = user.bio.toString()
             res.json(user)
         })
         .catch(err => res.status(500).send(err))

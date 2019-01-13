@@ -37,6 +37,7 @@ module.exports = app => {
         })
 
         standOutArticles.save().then(() => console.log('Artigos de destaque atualizados!'))
+        res.send(204)
     }
 
     return { StandOutArticles, get, save }

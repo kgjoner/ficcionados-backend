@@ -14,7 +14,7 @@ module.exports = app => {
             const title = tab.match(/(title=")(.+)(?=")/i)[2]
             titles.push(title+'/%'+open)
             tab = tab.replace('[[/tab]]', '')
-            tab = tab.replace(/title=".+"(.+)?]](?=.)/i, '')
+            tab = tab.replace(/title=".+"(.+)?]]/i, '')
             tabsHTML = tabsHTML + `<div id="${title}" class="tabcontent${open}">` 
             + tab + '</div>'
         })
