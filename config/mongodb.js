@@ -4,8 +4,6 @@ if (!process.env.MONGO_URI) {
 } else {
     mongoURI = process.env.MONGO_URI
 }
-console.log(mongoURI)
-console.log(process.env.MONGO_URI)
 mongoose.connect(mongoURI, {useNewUrlParser: true})
     .catch(e => {
         const msg = 'Não foi possível conectar com o MongoDB'
