@@ -4,6 +4,7 @@ const db = require('./config/db.js')
 const mongoose = require('mongoose')
 
 const port = process.env.PORT || 3000
+console.log(port)
 
 require('./config/mongodb')
 

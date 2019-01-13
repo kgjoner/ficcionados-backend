@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "preinstall": "npm i -g pm2 && pm2 install pm2-logrotate",
     "start": "nodemon",
-    "production": "pm2 start index.js --name ficcionados-backend"
+    "production": "pm2-runtime index.js -i max --name ficcionados-backend"
   },
   "keywords": [],
   "author": "",
