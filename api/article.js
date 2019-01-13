@@ -11,7 +11,7 @@ module.exports = app => {
         let titles = []
         tabs.forEach(tab => {
             const open = tab.match("open") ? ` active` : ''
-            const title = tab.match(/(title=")(.+)(?=")/i)[2]
+            const title = tab.match(/(title=")(.+)(")/i)[2]
             titles.push(title+'/%'+open)
             tab = tab.replace('[[/tab]]', '')
             tab = tab.replace(/title=".+"(.+)?]]/i, '')
