@@ -1,4 +1,4 @@
-const { authSecret } = require('../.env')
+if(!process.env.PORT) const { authSecret } = require('../.env')
 const jwt = require('jwt-simple')
 const bcrypt = require('bcrypt-nodejs')
 

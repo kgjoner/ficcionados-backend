@@ -1,5 +1,5 @@
 var nodemailer = require('nodemailer');
-const { mailerAuth } = require('../.env')
+if(!process.env.PORT) const { mailerAuth } = require('../.env')
 
 module.exports = app => {
 
@@ -22,7 +22,7 @@ module.exports = app => {
             service: 'gmail',
             auth: {
                 user: 'para.ficcionados@gmail.com',
-                pass: mailerAuth
+                pass: process.env.MAILER_AUTH || mailerAuth
             }
         });
 

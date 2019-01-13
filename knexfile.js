@@ -1,8 +1,6 @@
 // Update with your config settings.
 
-const { db } = require('./.env')
-
-if (!db) {
+if (process.env.PORT) {
 	db = {
 		host: process.env.DB_HOST,
         port: process.env.DB_PORT,
@@ -10,6 +8,8 @@ if (!db) {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
 	}
+} else {
+	const { db } = require('./.env')
 }
 
 module.exports = {
