@@ -1,5 +1,9 @@
-var nodemailer = require('nodemailer');
-//if(!process.env.PORT) const { mailerAuth } = require('../.env')
+const nodemailer = require('nodemailer');
+if(!process.env.MAILER_AUTH) {
+    var { mailerAuth } = require('../.env')
+} else {
+    var mailerAuth = process.env.MAILER_AUTH
+}
 
 module.exports = app => {
 

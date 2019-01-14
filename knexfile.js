@@ -6,10 +6,10 @@ if (process.env.PORT) {
         port: process.env.DB_PORT,
         database: process.env.DB_DATABASE,
         user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
+        password: process.env.DB_PASSWORD
 	}
 } else {
-	const { db } = require('./.env')
+	var { db } = require('./.env')
 }
 
 module.exports = {

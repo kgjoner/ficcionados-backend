@@ -115,7 +115,7 @@ module.exports = app => {
                 this.on('a.userId', '=', 'u.id').onIn('a.id', req.params.id)
             }).first()
             .then(article => {
-                article.content = article.content.toString()
+                if(article.content) article.content = article.content.toString()
                 return res.json(article)
             })
             .then(_ => res.status(204).send())

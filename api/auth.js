@@ -1,6 +1,12 @@
-//if(!process.env.PORT) const { authSecret } = require('../.env')
 const jwt = require('jwt-simple')
 const bcrypt = require('bcrypt-nodejs')
+
+if(!process.env.AUTH_SECRET) {
+    var { authSecret } = require('../.env')
+} else {
+    var authSecret = process.env.AUTH_SECRET
+}
+
 
 module.exports = app => {
 
@@ -30,7 +36,7 @@ module.exports = app => {
 
         res.json({
             ...payload,
-            token: jwt.encode(payload, process.env.AUTH_SECRET)
+            token: jwt.encode(payload, authSecret)
         })
 
     }
@@ -39,7 +45,7 @@ module.exports = app => {
         const userData = req.body || null
         try {
             if (userData) {
-                const token = jwt.decode(userData.token, process.env.AUTH_SECRET)
+                const token = jwt.decode(userData.token, authSecret)
                 if (new Date(token.exp * 1000) > new Date()) {
                     return res.send(true)
                 }

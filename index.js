@@ -20,5 +20,5 @@ consign()
     .into(app)
 
 app.listen(port, () => {
-    console.log('Backend executando...')
+    console.log('Backend executando...'+port)
 })

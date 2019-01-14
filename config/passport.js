@@ -1,7 +1,11 @@
-//if(!process.env.PORT) const { authSecret } = require('../.env')
 const passport = require('passport')
 const passportJwt = require('passport-jwt')
 const { Strategy, ExtractJwt } = passportJwt
+if(!process.env.AUTH_SECRET) {
+    var { authSecret } = require('../.env')
+} else {
+    var authSecret = process.env.AUTH_SECRET
+}
 
 module.exports = app => {
     const params = {

@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 if (!process.env.MONGO_URI) {
-    const { mongoURI } = require('../.env')
+    var { mongoURI } = require('../.env')
 } else {
-    mongoURI = process.env.MONGO_URI
+    var mongoURI = process.env.MONGO_URI
 }
 mongoose.connect(mongoURI, {useNewUrlParser: true})
     .catch(e => {
