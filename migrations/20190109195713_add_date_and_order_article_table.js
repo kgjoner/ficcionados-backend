@@ -8,7 +8,9 @@ exports.up = function(knex, Promise) {
 };
 
 exports.down = function(knex, Promise) {
+  return knex.schema.alterTable('articles', table => {
     table.dropColumn('publishedAt')
     table.dropColumn('editedAt')
     table.dropColumn('order')
+  })
 };

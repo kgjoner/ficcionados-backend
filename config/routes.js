@@ -6,6 +6,9 @@ module.exports = app => {
     app.post('/signin', app.api.auth.signin)
     app.post('/validateToken', app.api.auth.validateToken)
 
+    app.route('/favarticles')
+        .get(app.api.article.getInRange)
+
     app.route('/users')
         .all(app.config.passport.authenticate())
         .get(admin(app.api.user.get))
@@ -59,4 +62,7 @@ module.exports = app => {
     
     app.route('/search')
         .get(app.api.article.getByTerm)
+
+    app.route('/:slug')
+        .get(app.api.article.getBySlug)
 }

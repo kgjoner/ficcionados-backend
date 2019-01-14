@@ -33,10 +33,10 @@ module.exports = app => {
     const save = (req, res) => {
         const article = {... req.body}
         if (req.params.id) article.id = req.params.id
-        if (article.author) delete article.author
 
         try {
             existOrError(article.name, 'Título não informado')
+            existOrError(article.slug, 'Slug não informado')
             existOrError(article.description, 'Descrição não informada')
             existOrError(article.content, 'Conteúdo não informado')
             existOrError(article.userId, 'Autor não informado')
@@ -99,7 +99,7 @@ module.exports = app => {
         const count = parseInt(result.count)
 
         app.db({a: 'articles', u: 'users'})
-            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', {author: 'u.name'})
+            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.slug', {author: 'u.name'})
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .orderBy(order, 'desc')
             .limit(limit).offset(page*limit - limit) //offset é o deslocamento, a partir de qual linha a página começa
@@ -109,13 +109,29 @@ module.exports = app => {
 
     const getById = (req, res) => {
         app.db({a: 'articles'})
-            .select('a.id', 'a.name', 'a.description', 'a.userId', 'a.categoryId', 'a.imageUrl',
-                'a.publishedAt', 'a.editedAt', 'a.order', 'a.content', {author: 'u.name'})
+            .where( {id : req.params.id}).first()
+            .then(article => {
+                if(article.content) article.content = article.content.toString()
+                return res.json(article)
+            })
+            .then(_ => res.status(204).send())
+            .catch(err => res.status(500).send())
+    }
+
+    const getBySlug = (req, res) => {
+        app.db({a: 'articles'})
+            .select('a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.editedAt', 'a.content', 
+                {author: 'u.name'}, 'u.email', 'u.bio', 'u.website', 'u.facebook', 'u.instagram', 
+                'u.twitter', 'u.wattpad', {category: 'c.name'})
             .join({u:'users'}, function() {
-                this.on('a.userId', '=', 'u.id').onIn('a.id', req.params.id)
+                this.on('a.userId', '=', 'u.id').onIn('a.slug', req.params.slug)
+            }).first()
+            .join({c:'categories'}, function() {
+                this.on('a.categoryId', '=', 'c.id').onIn('a.slug', req.params.slug)
             }).first()
             .then(article => {
                 if(article.content) article.content = article.content.toString()
+                if(article.bio) article.bio = article.bio.toString()
                 return res.json(article)
             })
             .then(_ => res.status(204).send())
@@ -132,7 +148,7 @@ module.exports = app => {
         const order = orderParam == 'order' ? 'asc' : 'desc'
 
         app.db({a: 'articles', u: 'users'})
-            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', {author: 'u.name'})
+            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
             .limit(limit).offset(page*limit-limit)
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .whereIn('categoryId', ids)
@@ -154,7 +170,7 @@ module.exports = app => {
         const page = req.query.page || 1
         
         app.db({a: 'articles', u: 'users'})
-            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', {author: 'u.name'})
+            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
             .limit(limit).offset(page*limit-limit)
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .whereIn('a.id', ids)
@@ -165,6 +181,18 @@ module.exports = app => {
             
     }
 
-    return {save, remove, get, getById, getByCategory, getByTerm}
+    const getInRange = (req, res) => {
+        const ids = JSON.parse(req.query.articles)
+
+        app.db({a: 'articles', u: 'users'})
+        .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.slug',
+            'a.categoryId', {author: 'u.name'})
+        .whereRaw('?? = ??', ['u.id', 'a.userId'])
+        .whereIn('a.id', ids)
+        .then(articles => res.json(articles))
+        .catch(err => res.status(500).send())
+    }
+
+    return {save, remove, get, getById, getByCategory, getByTerm, getBySlug, getInRange}
 
 }
