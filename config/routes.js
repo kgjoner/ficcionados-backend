@@ -1,5 +1,6 @@
 const admin = require('./admin')
 
+
 module.exports = app => {
 
     app.post('/signup', app.api.user.save)
@@ -62,6 +63,18 @@ module.exports = app => {
     
     app.route('/search')
         .get(app.api.article.getByTerm)
+
+    app.route('/images')
+        .get(app.api.image.get)
+        .post(app.api.image.post)
+
+    app.route('/images/:id')
+        .get(app.api.image.getById)
+        .put(app.api.image.update)
+        .delete(app.api.image.remove)
+
+    app.route('/cardimages')
+        .get(app.api.image.getInRange)
 
     app.route('/:slug')
         .get(app.api.article.getBySlug)

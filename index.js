@@ -1,4 +1,5 @@
-const app = require('express')()
+const express = require('express')
+const app = express()
 const consign = require('consign')
 const db = require('./config/db.js')
 const mongoose = require('mongoose')
@@ -9,6 +10,8 @@ require('./config/mongodb')
 
 app.db = db
 app.mongoose = mongoose
+
+app.use(express.static('./uploads'));
 
 consign()
     .include('./config/passport.js')

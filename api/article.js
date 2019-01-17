@@ -99,7 +99,7 @@ module.exports = app => {
         const count = parseInt(result.count)
 
         app.db({a: 'articles', u: 'users'})
-            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.slug', {author: 'u.name'})
+            .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.slug', {author: 'u.name'})
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .orderBy(order, 'desc')
             .limit(limit).offset(page*limit - limit) //offset é o deslocamento, a partir de qual linha a página começa
@@ -120,7 +120,7 @@ module.exports = app => {
 
     const getBySlug = (req, res) => {
         app.db({a: 'articles'})
-            .select('a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.editedAt', 'a.content', 
+            .select('a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.editedAt', 'a.content', 
                 {author: 'u.name'}, 'u.email', 'u.bio', 'u.website', 'u.facebook', 'u.instagram', 
                 'u.twitter', 'u.wattpad', {category: 'c.name'})
             .join({u:'users'}, function() {
@@ -148,7 +148,7 @@ module.exports = app => {
         const order = orderParam == 'order' ? 'asc' : 'desc'
 
         app.db({a: 'articles', u: 'users'})
-            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
+            .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
             .limit(limit).offset(page*limit-limit)
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .whereIn('categoryId', ids)
@@ -170,7 +170,7 @@ module.exports = app => {
         const page = req.query.page || 1
         
         app.db({a: 'articles', u: 'users'})
-            .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
+            .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
             .limit(limit).offset(page*limit-limit)
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .whereIn('a.id', ids)
@@ -184,10 +184,11 @@ module.exports = app => {
     const getInRange = (req, res) => {
         const ids = JSON.parse(req.query.articles)
 
-        app.db({a: 'articles', u: 'users'})
-        .select('a.id', 'a.name', 'a.description', 'a.imageUrl', 'a.publishedAt', 'a.slug',
-            'a.categoryId', {author: 'u.name'})
+        app.db({a: 'articles', u: 'users', c: 'categories'})
+        .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.slug',
+            'a.categoryId', {author: 'u.name'}, {category: 'c.name'})
         .whereRaw('?? = ??', ['u.id', 'a.userId'])
+        .whereRaw('?? = ??', ['c.id', 'a.categoryId'])
         .whereIn('a.id', ids)
         .then(articles => res.json(articles))
         .catch(err => res.status(500).send())
