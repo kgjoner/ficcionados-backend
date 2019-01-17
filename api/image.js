@@ -10,8 +10,8 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const fileFormat = file.originalname.split('.')[1]
-        const filename = req.body.title.toLowerCase().split(' ').join('-')
-        cb(null, filename.normalize('NFD').replace(/[\u0300-\u036f]/g, "") + "." + fileFormat)
+        const filename = req.body.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+        cb(null, filename.split(/[^\w]+/).join('-') + "." + fileFormat)
     }
   })
 const upload = multer({ storage: storage }).single('image')
@@ -39,9 +39,12 @@ module.exports = app => {
     }
 
     const resizeImg = (filename) => {
-        const newFilename = filename.split('.').join('-480w.')
         const originalImg = `./uploads/${filename}`
-        const newImg = `./uploads/${newFilename}`
+
+        const newFilename480 = filename.split('.').join('-480w.')
+        const newImg480 = `./uploads/${newFilename480}`
+        const newFilename240 = filename.split('.').join('-240w.')
+        const newImg240 = `./uploads/${newFilename240}`
 
         sharp(originalImg)
             .resize({
@@ -49,7 +52,15 @@ module.exports = app => {
                 fit: 'inside',
                 withoutEnlargement: true
             })
-            .toFile(newImg)
+            .toFile(newImg480)
+        
+        sharp(originalImg)
+            .resize({
+                width: 240,
+                fit: 'inside',
+                withoutEnlargement: true
+            })
+            .toFile(newImg240)
     }
 
     const post = (req,res) => {   
