@@ -56,7 +56,7 @@ module.exports = app => {
     app.route('/mailer')
         .post(app.api.mailer.post)
 
-    app.route('/standOutArticles')
+    app.route('/standoutarticles')
         .get(app.api.standOutArticles.get)
         .all(app.config.passport.authenticate())
         .put(admin(app.api.standOutArticles.save))

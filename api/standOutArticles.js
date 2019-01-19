@@ -6,14 +6,14 @@ module.exports = app => {
     })
 
     const get = (req, res) => {
-        StandOutArticles.findOne({}, {}, { sort: {'createdAt': -1} })
-            .then(standOutArticles => {
+        StandOutArticles.findOne({})
+            .then(currentData => {
                 const defaultStandOutArticles = {
                     recommended: [1,1,1],
                     interviews: [1,1,1],
                     createdAt: 0,
                 }
-                res.json(standOutArticles || defaultStandOutArticles)
+                res.json(currentData || defaultStandOutArticles)
             })
     }
 
@@ -23,21 +23,31 @@ module.exports = app => {
         const indexToBeAltered = Number(req.body.index)
         const newSelectedArticle = Number(req.body.article)
 
-        const lastOne = await StandOutArticles.findOne({}, {}, { sort: {'createdAt': -1}})
+        const lastOne = await StandOutArticles.findOne({})
 
         let newOne = lastOne || { recommended: [1,1,1], interviews: [1,1,1], createdAt: 0 }
 
         
         newOne[keyToBeAltered][indexToBeAltered] = newSelectedArticle;
-        
-        const standOutArticles = new StandOutArticles({
-            recommended: newOne.recommended,
-            interviews: newOne.interviews,
-            createdAt: new Date()
-        })
 
-        standOutArticles.save().then(() => console.log('Artigos de destaque atualizados!'))
-        res.send(204)
+        if (!lastOne) {
+            const newOneDeclared = new StandOutArticles ({
+                recommended: newOne.recommended,
+                interviews: newOne.interviews,
+                createdAt: new Date()
+            })
+            newOneDeclared.save()
+                .then(data => console.log(data))
+        } else {
+            const changings = {
+                recommended: newOne.recommended,
+                interviews: newOne.interviews,
+                createdAt: new Date()
+            }
+            StandOutArticles.updateOne({}, changings)
+                .then(data => console.log(data))
+        }
+        res.sendStatus(204)
     }
 
     return { StandOutArticles, get, save }

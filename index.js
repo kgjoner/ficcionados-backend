@@ -3,13 +3,16 @@ const app = express()
 const consign = require('consign')
 const db = require('./config/db.js')
 const mongoose = require('mongoose')
+const cloudinary = require('cloudinary')
 
 const port = process.env.PORT || 3000
 
 require('./config/mongodb')
+require('./config/imgStore')
 
 app.db = db
 app.mongoose = mongoose
+app.cloudinary = cloudinary
 
 app.use(express.static('./uploads'));
 
