@@ -120,7 +120,7 @@ module.exports = app => {
                     .catch(e => res.status(500).send(e))
                 app.cloudinary.v2.uploader.rename(oldName.replace(`.${data.format}`,'-480w'), data.filename.replace(`.${data.format}`,'-480w'))
                     .catch(e => res.status(500).send(e))
-                app.cloudinary.v2.uploader.rename(oldName.replace(`.${data.format}`,'-240w'), data.filename.replace(`.${data.format}`,'-240w.'))
+                app.cloudinary.v2.uploader.rename(oldName.replace(`.${data.format}`,'-240w'), data.filename.replace(`.${data.format}`,'-240w'))
                     .catch(e => res.status(500).send(e))
             })
             .catch(e => res.send(e))

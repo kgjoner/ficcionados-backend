@@ -11,7 +11,7 @@ module.exports = app => {
         let titles = []
         tabs.forEach(tab => {
             const open = tab.match("open") ? ` active` : ''
-            const title = tab.match(/(title=")(.+)(")/i)[2]
+            const title = tab.match(/(title=")(((?!]]).)+)(")/i)[2]
             titles.push(title+'/%'+open)
             tab = tab.replace('[[/tab]]', '')
             tab = tab.replace(/title=".+"(.+)?]]/i, '')
@@ -28,6 +28,14 @@ module.exports = app => {
         tabHeaderHTML = tabHeaderHTML + "</div>"
 
         return tabHeaderHTML + tabsHTML
+    }
+
+    const makeAccordions = (content) => {
+        const open = content.match("open") ? ` active` : ''
+        const title = content.match(/(title=")(((?!]]).)+)(")/i)[2]
+        const panel = content.split(']]')[1]
+        return `<div><button class="accordion${open}" onclick="openAccordion(event)">${title}</button>
+        <div class="accordion-panel">${panel}</div></div>`
     }
 
     const save = (req, res) => {
@@ -54,6 +62,17 @@ module.exports = app => {
                 return makeTabs(tab) + rest
             })
             article.content = tabs.join('')
+        }
+
+        let accordions = article.content.split('[[accordion')
+        if(accordions.length>1) {
+            accordions = accordions.map(accordion => {
+                if (!accordion.match('[[/accordion]]')) return accordion
+                const rest = accordion.split('[[/accordion]]')[1]
+                accordion = accordion.split('[[/accordion]]')[0]
+                return makeAccordions(accordion) + rest
+            })
+            article.content = accordions.join('')
         }
 
 
@@ -120,9 +139,9 @@ module.exports = app => {
 
     const getBySlug = (req, res) => {
         app.db({a: 'articles'})
-            .select('a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.editedAt', 'a.content', 
+            .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.editedAt', 'a.content', 
                 {author: 'u.name'}, 'u.email', 'u.bio', 'u.website', 'u.facebook', 'u.instagram', 
-                'u.twitter', 'u.wattpad', {category: 'c.name'})
+                'u.twitter', 'u.wattpad', {category: 'c.name'}, 'c.parentId')
             .join({u:'users'}, function() {
                 this.on('a.userId', '=', 'u.id').onIn('a.slug', req.params.slug)
             }).first()
@@ -145,16 +164,27 @@ module.exports = app => {
         const ids = categories.rows.map(c => c.id)
 
         const orderParam = req.query.order
-        const order = orderParam == 'order' ? 'asc' : 'desc'
+        const direction = orderParam == 'order' ? 'asc' : 'desc'
 
-        app.db({a: 'articles', u: 'users'})
-            .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
-            .limit(limit).offset(page*limit-limit)
-            .whereRaw('?? = ??', ['u.id', 'a.userId'])
-            .whereIn('categoryId', ids)
-            .orderBy(orderParam, order)
-            .then(articles => res.json(articles))
-            .catch(err => res.status(500).send())       
+        if(orderParam === 'random') {
+            app.db('articles')
+                .select('id', 'name', 'description', 'slug')
+                .limit(4)
+                .whereNot('id', page) //I'm using page here to actually mean the articleId
+                .whereIn('categoryId', ids)
+                .orderByRaw('RANDOM()')
+                .then(articles => res.json(articles))
+                .catch(err => res.status(500).send(err))
+        } else {
+            app.db({a: 'articles', u: 'users'})
+                .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
+                .limit(limit).offset(page*limit-limit)
+                .whereRaw('?? = ??', ['u.id', 'a.userId'])
+                .whereIn('categoryId', ids)
+                .orderBy(orderParam, direction)
+                .then(articles => res.json(articles))
+                .catch(err => res.status(500).send())
+        }       
     }
 
     const getByTerm = async (req, res) => {
