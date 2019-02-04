@@ -113,6 +113,7 @@ module.exports = app => {
     const get = async (req, res) => {
         const page = req.query.page || 1
         const order = req.query.order
+        const scheduled = req.query.scheduled? true : false
         
         const result = await app.db('articles').count('id').first()
         const count = parseInt(result.count)
@@ -120,6 +121,11 @@ module.exports = app => {
         app.db({a: 'articles', u: 'users'})
             .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.slug', {author: 'u.name'})
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
+            .modify(function(queryBuilder) {
+                if (!scheduled) {
+                    queryBuilder.where('publishedAt', '<', new Date())
+                }
+            })  
             .orderBy(order, 'desc')
             .limit(limit).offset(page*limit - limit) //offset é o deslocamento, a partir de qual linha a página começa
             .then(articles => res.json({ data: articles, count, limit }))
@@ -171,6 +177,7 @@ module.exports = app => {
                 .select('id', 'name', 'description', 'slug')
                 .limit(4)
                 .whereNot('id', page) //I'm using page here to actually mean the articleId
+                .where('publishedAt', '<', new Date())
                 .whereIn('categoryId', ids)
                 .orderByRaw('RANDOM()')
                 .then(articles => res.json(articles))
@@ -181,6 +188,7 @@ module.exports = app => {
                 .limit(limit).offset(page*limit-limit)
                 .whereRaw('?? = ??', ['u.id', 'a.userId'])
                 .whereIn('categoryId', ids)
+                .where('publishedAt', '<', new Date())
                 .orderBy(orderParam, direction)
                 .then(articles => res.json(articles))
                 .catch(err => res.status(500).send())
@@ -204,6 +212,7 @@ module.exports = app => {
             .limit(limit).offset(page*limit-limit)
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .whereIn('a.id', ids)
+            .where('publishedAt', '<', new Date())
             .then(articles => {
                 res.json(articles)
             })

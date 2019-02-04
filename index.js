@@ -4,6 +4,7 @@ const consign = require('consign')
 const db = require('./config/db.js')
 const mongoose = require('mongoose')
 const cloudinary = require('cloudinary')
+const http = require('http')
 
 const port = process.env.PORT || 3000
 
@@ -24,6 +25,11 @@ consign()
     .then('./schedule')
     .then('./config/routes.js')
     .into(app)
+
+setInterval(function() {
+    console.log("Ping!")
+    http.get("http://ficcionados-backend.herokuapp.com/categories");
+}, 300000);
 
 app.listen(port, () => {
     console.log('Backend executando...'+port)

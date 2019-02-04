@@ -22,8 +22,8 @@ module.exports = app => {
         .delete(admin(app.api.user.remove))
 
     app.route('/categories')
+        .get(app.api.category.get)
         .all(app.config.passport.authenticate())
-        .get(admin(app.api.category.get))
         .post(admin(app.api.category.save))
 
     app.route('/categories/tree') //tem que vir antes de categories/:id !!!

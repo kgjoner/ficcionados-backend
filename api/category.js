@@ -8,6 +8,7 @@ module.exports = app => {
 
         try {
             existOrError(category.name, 'Nome não informado')
+            existOrError(category.order, 'Ordem não informada')
         } catch(msg) {
             return res.status(400).send(msg)
         }
@@ -75,6 +76,7 @@ module.exports = app => {
 
     const get = (req, res) => {
         app.db('categories')
+            .orderBy('order', 'asc')
             .then(categories => res.json(withPath(categories)))
             .catch(err => res.status(500).send(err))
     }
@@ -87,10 +89,14 @@ module.exports = app => {
     }
 
     const toTree = (categories, tree) => {
-        if(!tree) tree = categories.filter(c => !c.parentId)
+        if(!tree) {
+            tree = categories.filter(c => !c.parentId)
+            tree = tree.sort((a,b) => a.order - b.order)
+        }
         tree = tree.map(parentBranch => {
             const isChild = branch => branch.parentId == parentBranch.id
-            parentBranch.children = toTree(categories, categories.filter(isChild))
+            const children = categories.filter(isChild).sort((a,b) => a.order - b.order)
+            parentBranch.children = toTree(categories, children)
             return parentBranch
         })
         return tree
