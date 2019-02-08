@@ -1,5 +1,7 @@
 const queries = require('./queries')
 
+const imgPath = 'https://res.cloudinary.com/hedf1kadi/image/upload/v1547811859/'
+
 module.exports = app => {
 
     const { existOrError } = app.api.validator
@@ -38,10 +40,21 @@ module.exports = app => {
         <div class="accordion-panel">${panel}</div></div>`
     }
 
-    const save = (req, res) => {
+    const makeImgs = (content) => {
+        
+        const filename = content.match(/(src=")(((?!\s).)+)(")/i)[2]
+        let align = content.match(/(align=")(((?!\s).)+)(")/i) || "center"
+        if(align!=="center") align = align[2]
+        let size = content.match(/(size=")(((?!\s).)+)(")/i) || "100%"
+        if(size!=="100%") size = size[2]
+
+        return `<img class="img-align-${align}" src="${imgPath}${filename}" style="max-width:${size};">`
+    }
+
+    const save = async (req, res) => {
         const article = {... req.body}
         if (req.params.id) article.id = req.params.id
-
+ 
         try {
             existOrError(article.name, 'Título não informado')
             existOrError(article.slug, 'Slug não informado')
@@ -73,6 +86,17 @@ module.exports = app => {
                 return makeAccordions(accordion) + rest
             })
             article.content = accordions.join('')
+        }
+        
+        let imgs = article.content.split('[[img')
+        if(imgs.length>1) {
+            imgs = imgs.map(img => {
+                if (!img.match('src')) return img
+                const rest = img.split('/]]')[1]
+                img = img.split(`/]]`)[0]
+                return makeImgs(img) + rest
+            })
+            article.content = imgs.join('')
         }
 
 

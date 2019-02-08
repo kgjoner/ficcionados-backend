@@ -29,7 +29,7 @@ consign()
 setInterval(function() {
     console.log("Ping!")
     http.get("http://ficcionados-backend.herokuapp.com/categories");
-}, 300000);
+}, 900000);
 
 app.listen(port, () => {
     console.log('Backend executando...'+port)

@@ -128,10 +128,20 @@ module.exports = app => {
         res.sendStatus(204)
     }
 
+    const limit = 10
+
     const get = async (req,res) => {
-        Image.find({})
-            .then(imgs => res.json(imgs))
-            .catch(e => res.status(400).send(e))
+        //const page = req.params.page || 1
+
+        Image.countDocuments({}, function(err, count) {
+            Image.find({})
+                //.limit(limit).skip(page*limit - limit)
+                .sort({_id: 'desc'})
+                .then(imgs => res.json(imgs))
+                .catch(e => res.status(400).send(e))
+        })
+
+        
     }
 
     const getById = async (req, res) => {
@@ -166,5 +176,5 @@ module.exports = app => {
         
     }
 
-    return { post, get, getById, update, remove, getInRange }
+    return { post, get, getById, update, remove, getInRange, Image }
 }
