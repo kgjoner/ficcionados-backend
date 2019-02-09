@@ -80,14 +80,14 @@ module.exports = app => {
         let accordions = article.content.split('[[accordion')
         if(accordions.length>1) {
             accordions = accordions.map(accordion => {
-                if (!accordion.match('[[/accordion]]')) return accordion
+                if (!accordion.includes('[[/accordion]]')) return accordion
                 const rest = accordion.split('[[/accordion]]')[1]
                 accordion = accordion.split('[[/accordion]]')[0]
                 return makeAccordions(accordion) + rest
             })
             article.content = accordions.join('')
         }
-        
+
         let imgs = article.content.split('[[img')
         if(imgs.length>1) {
             imgs = imgs.map(img => {
