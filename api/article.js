@@ -6,7 +6,7 @@ module.exports = app => {
 
     const { existOrError } = app.api.validator
 
-    const makeTabs = (content) => {
+    const makeTabs = (content, n) => {
         const tabs = content.split('[[tab')
         tabs.splice(0,1)
         let tabsHTML = ''
@@ -17,7 +17,7 @@ module.exports = app => {
             titles.push(title+'/%'+open)
             tab = tab.replace('[[/tab]]', '')
             tab = tab.replace(/title=".+"(.+)?]]/i, '')
-            tabsHTML = tabsHTML + `<div id="${title}" class="tabcontent${open}">` 
+            tabsHTML = tabsHTML + `<div id="${n}-${title}" class="tab${n} tabcontent${open}">` 
             + tab + '</div>'
         })
         
@@ -25,7 +25,7 @@ module.exports = app => {
         titles.forEach(title => {
             const open = title.split('/%')[1] || ''
             title = title.split('/%')[0] 
-            tabHeaderHTML = tabHeaderHTML + `<button class="tablinks ${open}" onclick="openTab(event, '${title}')">${title}</button>`
+            tabHeaderHTML = tabHeaderHTML + `<button class="tab${n} tablinks ${open}" onclick="openTab(event, '${n}-${title}')">${title}</button>`
         })
         tabHeaderHTML = tabHeaderHTML + "</div>"
 
@@ -51,6 +51,55 @@ module.exports = app => {
         return `<img class="img-align-${align}" src="${imgPath}${filename}" style="max-width:${size};">`
     }
 
+    const transpileContent = (content) => {
+
+        function pipeTabs(content) {
+            let tabs = content.split('[[tabs]]')
+            if(tabs.length>1) {
+                let n = 0
+                tabs = tabs.map(tab => {
+                    if (!tab.match('[[/tabs]]')) return tab
+                    const rest = tab.split('[[/tabs]]')[1]
+                    tab = tab.split('[[/tabs]]')[0]
+                    n += 1
+                    return makeTabs(tab, n) + rest
+                })
+                content = tabs.join('')
+            }
+            return content
+        }
+
+        function pipeAccordions (content) {
+            let accordions = content.split('[[accordion')
+            if(accordions.length>1) {
+                accordions = accordions.map(accordion => {
+                    if (!accordion.includes('[[/accordion]]')) return accordion
+                    const rest = accordion.split('[[/accordion]]')[1]
+                    accordion = accordion.split('[[/accordion]]')[0]
+                    return makeAccordions(accordion) + rest
+                })
+                content = accordions.join('')
+            }
+            return content
+        }
+
+        function pipeImgs (content) {
+            let imgs = content.split('[[img')
+            if(imgs.length>1) {
+                imgs = imgs.map(img => {
+                    if (!img.match('src')) return img
+                    const rest = img.split('/]]')[1]
+                    img = img.split(`/]]`)[0]
+                    return makeImgs(img) + rest
+                })
+                content = imgs.join('')
+            }
+            return content
+        }
+
+        return pipeTabs(pipeAccordions(pipeImgs(content)))
+    }
+
     const save = async (req, res) => {
         const article = {... req.body}
         if (req.params.id) article.id = req.params.id
@@ -66,39 +115,7 @@ module.exports = app => {
             res.status(400).send(msg)
         }
 
-        let tabs = article.content.split('[[tabs]]')
-        if(tabs.length>1) {
-            tabs = tabs.map(tab => {
-                if (!tab.match('[[/tabs]]')) return tab
-                const rest = tab.split('[[/tabs]]')[1]
-                tab = tab.split('[[/tabs]]')[0]
-                return makeTabs(tab) + rest
-            })
-            article.content = tabs.join('')
-        }
-
-        let accordions = article.content.split('[[accordion')
-        if(accordions.length>1) {
-            accordions = accordions.map(accordion => {
-                if (!accordion.includes('[[/accordion]]')) return accordion
-                const rest = accordion.split('[[/accordion]]')[1]
-                accordion = accordion.split('[[/accordion]]')[0]
-                return makeAccordions(accordion) + rest
-            })
-            article.content = accordions.join('')
-        }
-
-        let imgs = article.content.split('[[img')
-        if(imgs.length>1) {
-            imgs = imgs.map(img => {
-                if (!img.match('src')) return img
-                const rest = img.split('/]]')[1]
-                img = img.split(`/]]`)[0]
-                return makeImgs(img) + rest
-            })
-            article.content = imgs.join('')
-        }
-
+        article.content = transpileContent(article.content)        
 
         if(article.id) {
             app.db('articles')
