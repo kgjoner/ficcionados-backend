@@ -41,13 +41,12 @@ module.exports = app => {
     }
 
     const makeImgs = (content) => {
-        
         const filename = content.match(/(src=")(((?!\s).)+)(")/i)[2]
         let align = content.match(/(align=")(((?!\s).)+)(")/i) || "center"
         if(align!=="center") align = align[2]
         let size = content.match(/(size=")(((?!\s).)+)(")/i) || "100%"
         if(size!=="100%") size = size[2]
-
+    
         return `<img class="img-align-${align}" src="${imgPath}${filename}" style="max-width:${size};">`
     }
 
@@ -188,7 +187,7 @@ module.exports = app => {
         app.db({a: 'articles'})
             .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.editedAt', 'a.content', 
                 {author: 'u.name'}, 'u.email', 'u.bio', 'u.website', 'u.facebook', 'u.instagram', 
-                'u.twitter', 'u.wattpad', {category: 'c.name'}, 'c.parentId')
+                'u.twitter', 'u.wattpad', 'u.sweek', {category: 'c.name'}, 'c.parentId')
             .join({u:'users'}, function() {
                 this.on('a.userId', '=', 'u.id').onIn('a.slug', req.params.slug)
             }).first()
