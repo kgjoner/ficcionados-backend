@@ -187,7 +187,7 @@ module.exports = app => {
     const getBySlug = (req, res) => {
         app.db({a: 'articles'})
             .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.editedAt', 'a.content', 
-                {author: 'u.name'}, 'u.email', 'u.bio', 'u.website', 'u.facebook', 'u.instagram', 
+                'a.order', {author: 'u.name'}, 'u.email', 'u.bio', 'u.website', 'u.facebook', 'u.instagram', 
                 'u.twitter', 'u.wattpad', 'u.sweek', {category: 'c.name'}, 'c.parentId')
             .join({u:'users'}, function() {
                 this.on('a.userId', '=', 'u.id').onIn('a.slug', req.params.slug)
@@ -274,6 +274,26 @@ module.exports = app => {
         .catch(err => res.status(500).send())
     }
 
-    return {save, remove, get, getById, getByCategory, getByTerm, getBySlug, getInRange}
+    const getPreview = (req, res) => {
+        app.db({a: 'articles'})
+            .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.editedAt', 'a.content', 
+                {author: 'u.name'}, 'u.email', 'u.bio', 'u.website', 'u.facebook', 'u.instagram', 
+                'u.twitter', 'u.wattpad', 'u.sweek', {category: 'c.name'}, 'c.parentId')
+            .join({u:'users'}, function() {
+                this.on('a.userId', '=', 'u.id').onIn('a.id', req.query.id)
+            }).first()
+            .join({c:'categories'}, function() {
+                this.on('a.categoryId', '=', 'c.id').onIn('a.id', req.query.id)
+            }).first()
+            .then(article => {
+                if(article.content) article.content = article.content.toString()
+                if(article.bio) article.bio = article.bio.toString()
+                return res.json(article)
+            })
+            .then(_ => res.status(204).send())
+            .catch(err => res.status(500).send())
+    }
+
+    return {save, remove, get, getById, getByCategory, getByTerm, getBySlug, getInRange, getPreview}
 
 }

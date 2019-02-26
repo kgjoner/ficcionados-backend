@@ -49,6 +49,10 @@ module.exports = app => {
         .put(admin(app.api.article.save))
         .delete(admin(app.api.article.remove))
 
+    app.route('/preview')
+        .all(app.config.passport.authenticate())
+        .get(app.api.article.getPreview)
+
     app.route('/stats')
         .all(app.config.passport.authenticate())
         .get(app.api.stat.get)
