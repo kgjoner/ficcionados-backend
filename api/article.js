@@ -96,6 +96,7 @@ module.exports = app => {
             return content
         }
 
+        content = content.split('[hr]').join('<hr>')
         return pipeTabs(pipeAccordions(pipeImgs(content)))
     }
 
