@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "It serves the Ficcionados blog.",
   "main": "index.js",
   "scripts": {
     "preinstall": "npm i -g pm2 && pm2 install pm2-logrotate",
@@ -9,7 +9,7 @@
     "dev": "nodemon"
   },
   "keywords": [],
-  "author": "",
+  "author": "K. G. Joner",
   "license": "ISC",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
