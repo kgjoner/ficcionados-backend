@@ -4,7 +4,6 @@ It serves the [Ficcionados blog](https://github.com/kgjoner/ficcionados). Made w
 
 ## Project setup
 ```
-npm run preinstall
 npm install
 ```
 
