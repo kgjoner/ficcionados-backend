@@ -7,6 +7,12 @@ module.exports = app => {
     app.post('/signin', app.api.auth.signin)
     app.post('/validateToken', app.api.auth.validateToken)
 
+    app.route('/build/articles')
+        .get(app.api.article.getAll)
+
+    app.route('/build/users')
+        .get(app.api.user.getAll)
+
     app.route('/favarticles')
         .get(app.api.article.getInRange)
 

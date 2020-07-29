@@ -69,6 +69,23 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
+    const getAll = (req, res) => {
+        app.db('users')
+            .select('id', 'name', 'email', 'admin', 'bio', 'website', 'facebook', 
+                'twitter', 'instagram', 'wattpad', 'sweek')
+            .whereNull('deletedAt')
+            .then(users => {
+                users.map(user => {
+                    if(!user.bio) return user
+                    return {
+                        ...user,
+                        bio: user.bio.toString()
+                    }
+                })
+                res.json(users)
+            }) 
+    }
+
     const getById = (req, res) => {
         app.db('users')
         .select('id', 'name', 'email', 'admin', 'bio', 'website', 'facebook', 'twitter', 'instagram', 'wattpad', 'sweek')
@@ -102,5 +119,5 @@ module.exports = app => {
     }
 
 
-    return { save, get, getById, remove }
+    return { save, get, getAll, getById, remove }
 }

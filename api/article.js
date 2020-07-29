@@ -153,7 +153,7 @@ module.exports = app => {
 
     const get = async (req, res) => {
         const page = req.query.page || 1
-        const order = req.query.order
+        const order = req.query.order || 'publishedAt'
         const scheduled = req.query.scheduled? true : false
         
         const result = await app.db('articles').count('id').first()
@@ -170,6 +170,29 @@ module.exports = app => {
             .orderBy(order, 'desc')
             .limit(limit).offset(page*limit - limit) //offset é o deslocamento, a partir de qual linha a página começa
             .then(articles => res.json({ data: articles, count, limit }))
+            .catch(err => res.status(500).send())
+    }
+
+    const getAll = (req, res) => {
+        const order = req.query.order || 'publishedAt'
+
+        app.db('articles')
+            .modify(function(queryBuilder) {
+                if (!scheduled) {
+                    queryBuilder.where('publishedAt', '<', new Date())
+                }
+            })
+            .orderBy(order, 'desc')
+            .then(articles => {
+                articles.map(article => {
+                    if(!article.content) return article
+                    return {
+                        ...article,
+                        content: article.content.toString()
+                    }
+                })
+                res.json(articles)
+            })
             .catch(err => res.status(500).send())
     }
 
@@ -294,6 +317,6 @@ module.exports = app => {
             .catch(err => res.status(500).send())
     }
 
-    return {save, remove, get, getById, getByCategory, getByTerm, getBySlug, getInRange, getPreview}
+    return {save, remove, get, getAll, getById, getByCategory, getByTerm, getBySlug, getInRange, getPreview}
 
 }
