@@ -32,7 +32,7 @@ module.exports = app => {
         .all(app.config.passport.authenticate())
         .post(admin(app.api.category.save))
 
-    app.route('/categories/tree') //tem que vir antes de categories/:id !!!
+    app.route('/categories/tree') //it has to come before categories/:id !!!
         .get(app.api.category.getTree)
 
     app.route('/categories/:id')

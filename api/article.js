@@ -175,6 +175,7 @@ module.exports = app => {
 
     const getAll = (req, res) => {
         const order = req.query.order || 'publishedAt'
+        const scheduled = req.query.scheduled || false
 
         app.db('articles')
             .modify(function(queryBuilder) {
@@ -184,16 +185,15 @@ module.exports = app => {
             })
             .orderBy(order, 'desc')
             .then(articles => {
-                articles.map(article => {
+                res.json(articles.map(article => {
                     if(!article.content) return article
                     return {
                         ...article,
                         content: article.content.toString()
                     }
-                })
-                res.json(articles)
+                }))
             })
-            .catch(err => res.status(500).send())
+            .catch(err => res.status(500).send(err))
     }
 
     const getById = (req, res) => {
@@ -228,9 +228,12 @@ module.exports = app => {
     }
 
     const getByCategory = async (req, res) => {
-        const categoryId = req.params.id
+        const categoryId = Number(req.params.id)
+        if(!categoryId) return res.status(400).send('Category not informed')
+
         const page = req.query.page || 1
         const categories = await app.db.raw(queries.categoryWithChildren, categoryId)
+        if(!categories) return
         const ids = categories.rows.map(c => c.id)
 
         const orderParam = req.query.order
@@ -255,7 +258,7 @@ module.exports = app => {
                 .where('publishedAt', '<', new Date())
                 .orderBy(orderParam, direction)
                 .then(articles => res.json(articles))
-                .catch(err => res.status(500).send())
+                .catch(err => res.status(500).send(err))
         }       
     }
 
@@ -280,7 +283,7 @@ module.exports = app => {
             .then(articles => {
                 res.json(articles)
             })
-            .catch(err => res.status(500).send())
+            .catch(err => res.status(500).send(err))
             
     }
 

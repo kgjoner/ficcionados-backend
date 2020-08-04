@@ -75,14 +75,13 @@ module.exports = app => {
                 'twitter', 'instagram', 'wattpad', 'sweek')
             .whereNull('deletedAt')
             .then(users => {
-                users.map(user => {
+                res.json(users.map(user => {
                     if(!user.bio) return user
                     return {
                         ...user,
                         bio: user.bio.toString()
                     }
-                })
-                res.json(users)
+                }))
             }) 
     }
 
