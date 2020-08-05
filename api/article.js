@@ -265,23 +265,40 @@ module.exports = app => {
     const getByTerm = async (req, res) => {
         const term = req.query.s.toLowerCase().split('+').join('%')
         const charTerm = '%'+term+'%'
-        let binTerm = term.split('%').map(word => {
-            return word.split('').map(char => char.charCodeAt(0).toString(16)).join('')
-        }).join('%')
+        let binTerm = term
+            .split('%')
+            .map(word => (
+                word.split('').map(char => char.charCodeAt(0).toString(16)).join('')
+            ))
+            .join('%')
         binTerm = '%'+binTerm+'%'
+
         const articleMatch = await app.db.raw(queries.termInContent, [binTerm, charTerm])
         const ids = articleMatch.rows.map(a => a.id)
 
+        const { count } = await app.db('articles')
+            .whereIn('articles.id', ids)
+            .where('publishedAt', '<', new Date())
+            .count('id')
+            .first()
+
         const page = req.query.page || 1
-        
+
         app.db({a: 'articles', u: 'users'})
             .select('a.id', 'a.name', 'a.description', 'a.imageId', 'a.publishedAt', 'a.order', 'a.slug', {author: 'u.name'})
-            .limit(limit).offset(page*limit-limit)
             .whereRaw('?? = ??', ['u.id', 'a.userId'])
             .whereIn('a.id', ids)
             .where('publishedAt', '<', new Date())
+            .limit(limit).offset(page*limit-limit)
             .then(articles => {
-                res.json(articles)
+                res.json({
+                    articles,
+                    pageInfo: {
+                        currentPage: page,
+                        totalItems: count,
+                        totalPages: Math.ceil(count/limit)
+                    }
+                })
             })
             .catch(err => res.status(500).send(err))
             
