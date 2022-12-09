@@ -17,7 +17,7 @@
     "cloudinary": "^1.22.0",
     "consign": "0.1.6",
     "cors": "2.8.4",
-    "express": "4.16.3",
+    "express": "4.17.3",
     "jwt-simple": "^0.5.6",
     "knex": "^0.20.15",
     "lokijs": "^1.5.9",
